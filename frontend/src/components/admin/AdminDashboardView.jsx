@@ -17,13 +17,24 @@ export default function AdminDashboardView({
       ? 'Admin'
       : (displayName.split(' ')[0] || 'Admin')
 
-  const totalSlots = slots.length || 160
-  const occupiedSlots = slots.filter((s) => s.status === 'occupied').length
-  const availableSlots = slots.filter((s) => s.status === 'available').length
-  const groundSlots = slots.filter((s) => s.floor === 'Ground Floor')
-  const groundAvailable = groundSlots.filter((s) => s.status === 'available').length
-  const basementSlots = slots.filter((s) => s.floor === 'Basement')
-  const basementAvailable = basementSlots.filter((s) => s.status === 'available').length
+  const groundSlots = slots.filter((s) => s.floor === 'Ground Floor' || s.id?.startsWith('G-'))
+  const basementSlots = slots.filter((s) => s.floor === 'Basement' || s.id?.startsWith('B-'))
+
+  const groundTotal = groundSlots.length || 80
+  const basementTotal = basementSlots.length || 80
+  const totalSlots = slots.length || (groundTotal + basementTotal) || 160
+
+  const groundOccupied = groundSlots.filter((s) => s.status === 'occupied' || s.status === 'OCCUPIED' || s.status === 'booked' || s.status === 'BOOKED').length
+  const groundReserved = groundSlots.filter((s) => s.status === 'reserved' || s.status === 'RESERVED').length
+  const groundAvailable = Math.max(0, groundTotal - groundOccupied - groundReserved)
+
+  const basementOccupied = basementSlots.filter((s) => s.status === 'occupied' || s.status === 'OCCUPIED' || s.status === 'booked' || s.status === 'BOOKED').length
+  const basementReserved = basementSlots.filter((s) => s.status === 'reserved' || s.status === 'RESERVED').length
+  const basementAvailable = Math.max(0, basementTotal - basementOccupied - basementReserved)
+
+  const occupiedSlots = groundOccupied + basementOccupied
+  const reservedSlots = groundReserved + basementReserved
+  const availableSlots = groundAvailable + basementAvailable
 
   return (
     <div className="admin-dashboard-container">
@@ -93,7 +104,7 @@ export default function AdminDashboardView({
           <div className="kpi-data">
             <span className="kpi-label">Occupied Slots</span>
             <strong className="kpi-value text-rose">{occupiedSlots}</strong>
-            <span className="kpi-sub">Active parked vehicles</span>
+            <span className="kpi-sub">{reservedSlots > 0 ? `${reservedSlots} reserved &bull; ` : ''}Active parked vehicles</span>
           </div>
         </div>
 
@@ -163,6 +174,17 @@ export default function AdminDashboardView({
           <div className="aft-text">
             <h4>Wrong Parking Management</h4>
             <p>Floor mismatch &amp; rule violations</p>
+          </div>
+        </div>
+
+        <div
+          className="admin-feature-tile glass-card"
+          onClick={() => onNavigateTab && onNavigateTab('vehicle-exit')}
+        >
+          <span className="aft-icon">🛑</span>
+          <div className="aft-text">
+            <h4>Vehicle Exit Checkout</h4>
+            <p>Gate 2 egress &amp; checkout scanner</p>
           </div>
         </div>
 

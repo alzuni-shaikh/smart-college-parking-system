@@ -48,7 +48,8 @@ import {
   subscribeToUserReservation,
   cancelUserReservation,
   seedParkingSlotsIfEmpty,
-  normalizeSlotId
+  normalizeSlotId,
+  isValidCanonicalSlotId
 } from './services/parkingService'
 
 import {
@@ -69,7 +70,8 @@ import {
 import {
   subscribeToParkingHistory,
   subscribeToActiveSessions,
-  createParkingSession
+  createParkingSession,
+  endParkingSession
 } from './services/parkingSessionService'
 
 import { verifyAndCompleteGateExit } from './services/guardExitService'
@@ -266,7 +268,10 @@ export default function App() {
         const parsed = JSON.parse(saved)
 
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed
+          const validCached = parsed.filter((s) => isValidCanonicalSlotId(s?.id))
+          if (validCached.length === 160) {
+            return validCached
+          }
         }
       }
     } catch {
@@ -564,6 +569,7 @@ export default function App() {
       if (!evt) return
       if (evt.type === 'SLOT_RESERVED' && evt.slotId) {
         const cleanId = normalizeSlotId(evt.slotId)
+        if (!isValidCanonicalSlotId(cleanId)) return
         setSlots((prev) => {
           const exists = prev.some((s) => normalizeSlotId(s.id) === cleanId)
           if (exists) {
@@ -592,6 +598,7 @@ export default function App() {
         })
       } else if (evt.type === 'SLOT_RELEASED' && evt.slotId) {
         const cleanId = normalizeSlotId(evt.slotId)
+        if (!isValidCanonicalSlotId(cleanId)) return
         setSlots((prev) =>
           prev.map((s) =>
             normalizeSlotId(s.id) === cleanId
@@ -1171,6 +1178,95 @@ export default function App() {
       } catch (err) {
         console.warn('[App] Firestore background cancel notice:', err?.message)
       }
+    }
+  }
+
+
+  // ==========================================
+  // STUDENT END PARKING & RELEASE SLOT
+  // ==========================================
+
+  const handleStudentEndParking = async (sessionOrSlot) => {
+    const currentUid = user?.uid || auth.currentUser?.uid || ''
+    const myRoll = userProfile?.campusId || userProfile?.rollNumber || ''
+    const myPlate = userProfile?.defaultPlate || userProfile?.vehicleNumber || userProfile?.vehiclePlate || ''
+    const studentName = userProfile?.displayName || user?.displayName || 'Campus Member'
+
+    const targetSlotId = normalizeSlotId(sessionOrSlot?.slotId || sessionOrSlot?.id)
+    const targetPlate = sessionOrSlot?.vehicleNumber || sessionOrSlot?.plate || myPlate
+    const targetSessionId = sessionOrSlot?.sessionId || sessionOrSlot?.id
+
+    if (!targetSlotId && !targetPlate && !targetSessionId) {
+      showToast('End Parking Error', 'No active parking session identified.', 'error')
+      throw new Error('No active parking session identified.')
+    }
+
+    try {
+      const result = await endParkingSession({
+        slotId: targetSlotId,
+        vehicleNumber: targetPlate,
+        studentName: sessionOrSlot?.studentName || studentName,
+        rollNumber: sessionOrSlot?.rollNumber || myRoll,
+        stream: sessionOrSlot?.stream || userProfile?.stream || '',
+        vehicleType: sessionOrSlot?.vehicleType || sessionOrSlot?.type || userProfile?.vehicleType || '',
+        floor: sessionOrSlot?.floor || (targetSlotId.startsWith('G') ? 'Ground Floor' : 'Basement'),
+        entryTime: sessionOrSlot?.entryTime || null,
+        entryTimestamp: sessionOrSlot?.entryTimestamp || null,
+        requestingUserId: currentUid
+      })
+
+      if (result.success) {
+        // Optimistic local state clearing
+        if (activeReservation && (activeReservation.slotId === targetSlotId || activeReservation.id === sessionOrSlot?.reservationId)) {
+          setActiveReservation(null)
+        }
+        setActivePass(null)
+        setConfirmationData(null)
+
+        // Optimistically release slot in local state
+        if (targetSlotId) {
+          setSlots((prev) =>
+            prev.map((s) =>
+              normalizeSlotId(s.id) === targetSlotId
+                ? {
+                    ...s,
+                    status: 'available',
+                    reservedBy: '',
+                    reservedByName: '',
+                    reservedByEmail: '',
+                    studentId: '',
+                    userId: '',
+                    plate: '',
+                    owner: '',
+                    reservedUntil: null,
+                    passId: '',
+                    passType: null,
+                    entryTime: null,
+                    entryTimestamp: null
+                  }
+                : s
+            )
+          )
+        }
+
+        // Broadcast slot release for cross-tab sync
+        broadcastSlotReleased({
+          slotId: targetSlotId,
+          userId: currentUid
+        })
+
+        showToast(
+          'Parking ended successfully.',
+          `Bay ${targetSlotId} has been released and is now available.`,
+          'success'
+        )
+
+        return result
+      }
+    } catch (err) {
+      console.error('[App] handleStudentEndParking error:', err)
+      showToast('End Parking Failed', err.message || 'Could not complete parking exit.', 'error')
+      throw err
     }
   }
 
@@ -2108,6 +2204,28 @@ export default function App() {
                   />
                 )}
 
+              {/* VEHICLE EXIT */}
+
+              {activeTab ===
+                'vehicle-exit' && (
+                  <VehicleExitView
+                    slots={slots}
+                    activeSessions={
+                      activeSessions
+                    }
+                    onReleaseSlot={
+                      handleReleaseSlot
+                    }
+                    user={user}
+                    userProfile={
+                      userProfile
+                    }
+                    showToast={
+                      showToast
+                    }
+                  />
+                )}
+
             </>
           )}
 
@@ -2128,6 +2246,9 @@ export default function App() {
                     userProfile
                   }
                   slots={slots}
+                  activeSessions={
+                    activeSessions
+                  }
                   activePermit={
                     activePermit
                   }
@@ -2153,6 +2274,9 @@ export default function App() {
                   }
                   onCancelReservation={
                     handleCancelReservation
+                  }
+                  onEndParkingSession={
+                    handleStudentEndParking
                   }
                   onCancelPermit={(
                     permit
@@ -2232,6 +2356,9 @@ export default function App() {
                       userProfile
                     }
                     slots={slots}
+                    activeSessions={
+                      activeSessions
+                    }
                     activePermit={
                       activePermit
                     }
@@ -2257,6 +2384,9 @@ export default function App() {
                     }
                     onCancelReservation={
                       handleCancelReservation
+                    }
+                    onEndParkingSession={
+                      handleStudentEndParking
                     }
                   />
                 )}

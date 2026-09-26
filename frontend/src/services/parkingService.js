@@ -21,6 +21,11 @@ import {
   getSlotPrefixForVehicleType,
   isSlotAllowedForVehicleType
 } from '../data/vehicleRules.js'
+import {
+  generateUniqueEntryToken,
+  createEntryQrPayload,
+  QR_TYPES
+} from '../utils/qrTokenUtils.js'
 
 const SLOTS_COLLECTION = 'parking_slots'
 const RESERVATIONS_COLLECTION = 'reservations'
@@ -41,6 +46,18 @@ export function normalizeSlotId(rawId) {
     return `${prefix}-${String(num).padStart(2, '0')}`
   }
   return trimmed
+}
+
+/**
+ * Validate that a slot ID is one of the exactly 160 valid campus slots:
+ * G-01 through G-80 (Ground Floor) or B-01 through B-80 (Basement).
+ */
+export function isValidCanonicalSlotId(rawId) {
+  if (!rawId || typeof rawId !== 'string') return false
+  const match = rawId.trim().toUpperCase().match(/^([GB])[-_ ]?0*(\d+)$/)
+  if (!match) return false
+  const num = parseInt(match[2], 10)
+  return num >= 1 && num <= 80
 }
 
 /**
@@ -87,7 +104,7 @@ export async function seedParkingSlotsIfEmpty() {
     // Identify ONLY the missing slot IDs from the 160 expected bays
     const missingSlots = INITIAL_SLOTS.filter((templateSlot) => {
       const normalizedId = normalizeSlotId(templateSlot.id)
-      return !existingDocIds.has(normalizedId)
+      return isValidCanonicalSlotId(normalizedId) && !existingDocIds.has(normalizedId)
     })
 
     console.log('[SEED DEBUG] missing slot count:', missingSlots.length)
@@ -142,11 +159,48 @@ export async function seedParkingSlotsIfEmpty() {
   }
 }
 
+/**
+ * Safe administrative cleanup helper:
+ * Finds and removes only out-of-range parking slot documents (> G-80, > B-80, or malformed)
+ * from the parking_slots collection in Firestore.
+ * Does NOT touch any user reservations, history, or active sessions.
+ */
+export async function cleanupExtraFirestoreSlots() {
+  if (!db) return { deletedCount: 0 }
+  try {
+    const slotsRef = collection(db, SLOTS_COLLECTION)
+    const snapshot = await getDocs(slotsRef)
+    const invalidDocs = []
+    snapshot.forEach((docSnap) => {
+      const id = normalizeSlotId(docSnap.id)
+      if (!isValidCanonicalSlotId(id)) {
+        invalidDocs.push(docSnap.ref)
+      }
+    })
+
+    if (invalidDocs.length === 0) {
+      console.log('[Firestore Cleanup] No out-of-range slot documents found.')
+      return { deletedCount: 0 }
+    }
+
+    console.log(`[Firestore Cleanup] Found ${invalidDocs.length} out-of-range slot documents. Deleting...`)
+    const batch = writeBatch(db)
+    invalidDocs.forEach((docRef) => batch.delete(docRef))
+    await batch.commit()
+    console.log(`[Firestore Cleanup] Successfully removed ${invalidDocs.length} extra slot documents.`)
+    return { deletedCount: invalidDocs.length }
+  } catch (err) {
+    console.warn('[Firestore Cleanup] Warning cleaning up extra slots:', err?.message)
+    return { deletedCount: 0, error: err }
+  }
+}
+
 let hasReceivedFirestoreSlots = false
 
 /**
  * Real-time subscription to all parking slots via Firestore onSnapshot.
  * Firestore is the authoritative source of truth.
+ * Strictly guarantees exactly 160 bays (80 Ground + 80 Basement).
  *
  * @param {Function} onUpdate - callback receiving sorted array of 160 slots
  * @param {Function} onError - optional error callback
@@ -165,7 +219,10 @@ export function subscribeToSlots(onUpdate, onError) {
       if (cached) {
         const parsed = JSON.parse(cached)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          onUpdate(sortSlots(parsed))
+          const validCached = parsed.filter(s => isValidCanonicalSlotId(s?.id))
+          if (validCached.length === 160) {
+            onUpdate(sortSlots(validCached))
+          }
         }
       }
     } catch {
@@ -182,13 +239,17 @@ export function subscribeToSlots(onUpdate, onError) {
 
         if (snapshot.empty) {
           console.log('[Firestore] parking_slots collection is currently empty.')
+          onUpdate(sortSlots(INITIAL_SLOTS.map(s => ({ ...s, status: 'available' }))))
           return
         }
 
         const firestoreMap = new Map()
         snapshot.forEach((docSnap) => {
           const docId = normalizeSlotId(docSnap.id)
-          firestoreMap.set(docId, { id: docId, ...docSnap.data() })
+          // Strictly filter to canonical 160 slots (G-01..G-80, B-01..B-80)
+          if (isValidCanonicalSlotId(docId)) {
+            firestoreMap.set(docId, { id: docId, ...docSnap.data() })
+          }
         })
 
         // Authoritative merge with 160-bay template:
@@ -210,14 +271,7 @@ export function subscribeToSlots(onUpdate, onError) {
           }
         })
 
-        // Also include any extra slots from Firestore
-        firestoreMap.forEach((val, key) => {
-          if (!mergedSlots.some((s) => normalizeSlotId(s.id) === key)) {
-            mergedSlots.push(val)
-          }
-        })
-
-        const sorted = sortSlots(mergedSlots)
+        const sorted = sortSlots(mergedSlots.filter(s => isValidCanonicalSlotId(s.id)))
         try {
           localStorage.setItem(LOCAL_SLOTS_KEY, JSON.stringify(sorted))
         } catch {
@@ -604,6 +658,17 @@ export async function reserveSlotWithTransaction({
     updatedAt: serverTimestamp()
   }
 
+  // Generate unique, non-predictable Parking Entry QR token
+  const uniqueEntryToken = generateUniqueEntryToken('ENTRY')
+  const entryQrPayload = createEntryQrPayload({
+    entryToken: uniqueEntryToken,
+    reservationId,
+    slotId: cleanSlotId,
+    plate: cleanPlate,
+    vehicleType: finalVehicleType,
+    floor: finalFloor
+  })
+
   const reservationRecord = {
     id: reservationId,
     reservationId,
@@ -627,6 +692,14 @@ export async function reserveSlotWithTransaction({
     passType: passType || 'Campus Parking Pass',
     passId,
     status: 'active',
+    // Entry QR specific fields
+    entryToken: uniqueEntryToken,
+    entryQrType: QR_TYPES.PARKING_ENTRY,
+    entryQrStatus: 'ACTIVE',
+    entryQrCreatedAt: serverTimestamp(),
+    entryQrUsedAt: null,
+    qrToken: uniqueEntryToken,
+    entryQrPayload,
     reservedAt: serverTimestamp(),
     createdAt: serverTimestamp(),
     entryTime: nowTime,
@@ -634,8 +707,7 @@ export async function reserveSlotWithTransaction({
     date: nowDate,
     validUntil: reservedUntil || 'Active Session',
     paymentStatus: 'PAID',
-    amountPaidINR: amountPaidINR || 0,
-    qrToken: `SOC-RES-${cleanSlotId}-${cleanPlate.replace(/[^A-Z0-9]/g, '') || Date.now()}`
+    amountPaidINR: amountPaidINR || 0
   }
 
   // 2. Concurrency-Safe Firestore Transaction with Graceful Offline/Permission Fallback
@@ -711,7 +783,11 @@ export async function reserveSlotWithTransaction({
     reservationStatus: 'Reserved',
     entryTime: nowTime,
     entryTimestamp: nowTimestamp,
-    qrToken: committedReservationData?.qrToken || `SOC-RES-${cleanSlotId}-${cleanPlate}`
+    entryToken: uniqueEntryToken,
+    entryQrType: QR_TYPES.PARKING_ENTRY,
+    entryQrStatus: 'ACTIVE',
+    entryQrPayload,
+    qrToken: uniqueEntryToken
   }
 
   return {
