@@ -1,6 +1,39 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Persistent Notifications Collection Rules
+    match /notifications/{notificationId} {
+      // Users can read notifications addressed specifically to them or broadcast to ALL
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.userId == 'ALL'
+      );
+      
+      // Notification Creation:
+      // - Students/users can ONLY create notifications addressed to their own UID
+      // - Admins & Security Admins can dispatch notifications to students or broadcast to ALL
+      allow create: if request.auth != null && (
+        request.resource.data.userId == request.auth.uid ||
+        request.auth.uid == 'R2eyVR9vzOUb6rwv9gNCPWcuoGr1' ||
+        request.auth.token.email == 'shaikhalzuni123@gmail.com' ||
+        request.auth.token.role in ['Admin', 'Security Admin'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Security Admin'])
+      );
+      
+      // Users can only update their own notifications (e.g. mark as read)
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid
+      );
+      
+      // Users can only delete their own read notifications
+      allow delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid &&
+        resource.data.read == true
+      );
+    }
+
     // Development / College Campus Simulation:
     // Allow seamless access across client demo users, RFID gates, admin scanners, and real-time bay reservations
     match /{document=**} {

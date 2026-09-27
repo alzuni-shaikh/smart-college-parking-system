@@ -76,6 +76,7 @@ import {
 
 import { verifyAndCompleteGateExit } from './services/guardExitService'
 import { getFloorForVehicleType } from './data/vehicleRules'
+import { createNotification } from './services/notificationService'
 
 import './App.css'
 
@@ -1064,6 +1065,22 @@ export default function App() {
           `Bay ${result.slotId} (${result.passData.floor}) is now reserved for ${result.passData.vehiclePlate}.`,
           'success'
         )
+
+        // Persistent notification (non-blocking)
+        try {
+          createNotification({
+            userId: currentUid,
+            title: 'Slot Reserved',
+            message: `Bay ${result.slotId} (${result.passData?.floor || 'Campus Parking'}) has been reserved for vehicle ${result.passData?.vehiclePlate || plate || 'N/A'}.`,
+            type: 'success',
+            relatedSlotId: result.slotId || cleanSlotId,
+            relatedVehiclePlate: result.passData?.vehiclePlate || plate || null
+          }).catch((notifErr) => {
+            console.warn('[App] Slot reservation notification warning:', notifErr?.message)
+          })
+        } catch (notifErr) {
+          console.warn('[App] Slot reservation notification sync warning:', notifErr?.message)
+        }
 
         return result
       }

@@ -14,6 +14,7 @@ import {
 import { auth, db } from '../firebase/firebase.js'
 import { normalizePlate } from './vehicleService.js'
 import { calculateAuthoritativeDuration } from '../utils/timerUtils.js'
+import { createNotification } from './notificationService.js'
 
 const SESSIONS_COLLECTION = 'parking_sessions'
 const HISTORY_COLLECTION = 'parking_history'
@@ -356,6 +357,30 @@ export async function endParkingSession({
 
   // Commit all operations atomically
   await batch.commit()
+
+  // Dispatch persistent session completed notification (non-blocking secondary action)
+  const sessionStudentId =
+    sessionData.studentId ||
+    slotData.userId ||
+    slotData.studentId ||
+    requestingUserId ||
+    (auth.currentUser ? auth.currentUser.uid : '')
+  if (sessionStudentId) {
+    try {
+      createNotification({
+        userId: sessionStudentId,
+        title: 'Parking Session Completed',
+        message: `Parking session completed for vehicle ${finalPlate}. Bay ${finalSlotId} (${finalFloor}) is now released and available.`,
+        type: 'info',
+        relatedSlotId: finalSlotId,
+        relatedVehiclePlate: finalPlate
+      }).catch((notifErr) => {
+        console.warn('[parkingSessionService] Session completion notification warning:', notifErr?.message)
+      })
+    } catch (notifErr) {
+      console.warn('[parkingSessionService] Session completion notification sync warning:', notifErr?.message)
+    }
+  }
 
   return {
     success: true,

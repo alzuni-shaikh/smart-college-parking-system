@@ -9,6 +9,7 @@ import {
   saveWrongParkingNotice,
   resolveWrongParkingNotice
 } from '../../services/parkingService'
+import { createNotification } from '../../services/notificationService'
 
 export default function WrongParkingView({
   slots = [],
@@ -74,6 +75,7 @@ export default function WrongParkingView({
           owner: slot.owner || 'Campus Member',
           rollNumber: slot.rollNumber || 'N/A',
           vehicleType: 'bike',
+          userId: slot.userId || slot.studentId || slot.reservedBy || matchedSaved?.userId || null,
           detectedTime: slot.entryTime || matchedSaved?.detectedTime || 'Active Session',
           status: matchedSaved?.status || 'Detected',
           noticeIssued: Boolean(matchedSaved)
@@ -96,6 +98,7 @@ export default function WrongParkingView({
           owner: slot.owner || 'Campus Member',
           rollNumber: slot.rollNumber || 'N/A',
           vehicleType: 'scooty',
+          userId: slot.userId || slot.studentId || slot.reservedBy || matchedSaved?.userId || null,
           detectedTime: slot.entryTime || matchedSaved?.detectedTime || 'Active Session',
           status: matchedSaved?.status || 'Detected',
           noticeIssued: Boolean(matchedSaved)
@@ -128,6 +131,7 @@ export default function WrongParkingView({
           owner: r.owner || slotMatch.owner || 'Campus Member',
           rollNumber: r.rollNumber || slotMatch.rollNumber || 'N/A',
           vehicleType: r.vehicleType || slotMatch.type || 'scooty',
+          userId: r.userId || slotMatch.userId || slotMatch.studentId || slotMatch.reservedBy || null,
           detectedTime: r.detectedTime || slotMatch.entryTime || 'Active Session',
           status: r.status || 'Notice Issued',
           noticeIssued: true
@@ -169,12 +173,34 @@ export default function WrongParkingView({
           'info'
         )
       }
+
+      // Dispatch persistent student notification only if a reliable userId exists
+      const reliableUserId = v.userId || null
+      if (reliableUserId) {
+        try {
+          createNotification({
+            userId: reliableUserId,
+            title: 'Wrong Parking Notice',
+            message: `A parking violation was detected for vehicle ${v.plate || 'registered'} in Bay ${v.slotId} (${v.floor}). ${v.description || 'Please relocate vehicle to the designated floor immediately.'}`,
+            type: 'violation',
+            relatedSlotId: v.slotId,
+            relatedVehiclePlate: v.plate || null
+          }).catch((notifErr) => {
+            console.warn('[WrongParkingView] Notice notification warning:', notifErr?.message)
+          })
+        } catch (notifErr) {
+          console.warn('[WrongParkingView] Notice notification sync warning:', notifErr?.message)
+        }
+      } else {
+        console.log('[WrongParkingView] Notice saved to Firestore; no reliable student UID on record for notification push.')
+      }
     } catch (err) {
       console.error('Error issuing notice:', err)
       if (showToast) {
         showToast('Notice Error', 'Could not save notice to Firestore.', 'error')
       }
     } finally {
+      setIsProcessing(false)
       setProcessingId(null)
     }
   }

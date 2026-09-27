@@ -20,6 +20,7 @@ import {
   parseEntryQr,
   QR_TYPES
 } from '../utils/qrTokenUtils.js'
+import { createNotification } from './notificationService.js'
 
 const USERS_COLLECTION = 'users'
 const SLOTS_COLLECTION = 'parking_slots'
@@ -588,6 +589,25 @@ export async function verifyAndAdmitGatePass({
   // =========================================================
   // STEP 8 — RETURN STRUCTURED SUCCESS RESULT
   // =========================================================
+  // Dispatch persistent student notification (non-blocking secondary action)
+  const studentUserId = reservation.userId || reservation.studentId || ''
+  if (studentUserId) {
+    try {
+      createNotification({
+        userId: studentUserId,
+        title: 'Parking Entry Approved',
+        message: `Vehicle ${reservationPlate} entered campus and occupied Bay ${slotId} (${transactionSummary?.floor || 'Campus Parking'}). Gate barrier opened.`,
+        type: 'success',
+        relatedSlotId: slotId,
+        relatedVehiclePlate: reservationPlate
+      }).catch((notifErr) => {
+        console.warn('[guardGateService] Parking entry notification warning:', notifErr?.message)
+      })
+    } catch (notifErr) {
+      console.warn('[guardGateService] Parking entry notification sync warning:', notifErr?.message)
+    }
+  }
+
   return {
     approved: true,
     reason: GATE_REASON_CODES.ENTRY_APPROVED,
