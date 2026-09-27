@@ -153,60 +153,114 @@ export default function QRScanner({
         })
       }
 
-      // 3. Configure camera source
-      let cameraConfig = { facingMode }
+      // 3. Configure camera source with high-quality resolution constraints
+      // Prefers rear/environment camera and requests 1280x720 resolution without forcing exact values
+      let cameraConfig = {
+        facingMode: { ideal: facingMode },
+        width: { ideal: 1280, min: 640 },
+        height: { ideal: 720, min: 480 }
+      }
+
       if (selectedCameraId) {
-        cameraConfig = { deviceId: { exact: selectedCameraId } }
+        cameraConfig = {
+          deviceId: { exact: selectedCameraId },
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 }
+        }
       } else if (availableCameras && availableCameras.length > 0) {
         // Look for rear/back camera if facingMode is environment
         const backCam = availableCameras.find(
-          (c) => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear') || c.label.toLowerCase().includes('environment')
+          (c) =>
+            c.label.toLowerCase().includes('back') ||
+            c.label.toLowerCase().includes('rear') ||
+            c.label.toLowerCase().includes('environment')
         )
         if (backCam && facingMode === 'environment') {
-          cameraConfig = { deviceId: { exact: backCam.id } }
+          cameraConfig = {
+            deviceId: { exact: backCam.id },
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 }
+          }
         }
       }
 
+      // 4. Scanning configuration: Higher FPS (25) for immediate real-time QR detection
       const scanConfig = {
-        fps: 10,
+        fps: 25,
         disableFlip: facingMode === 'environment'
       }
 
-      // 4. Start decoding video stream with full-frame uncropped processing
-      await scannerRef.current.start(
-        cameraConfig,
-        scanConfig,
-        (decodedText) => {
-          // Success callback
-          if (!decodedText || scanLockRef.current || isProcessing) return
+      const onScanSuccess = (decodedText) => {
+        // Success callback
+        if (!decodedText || scanLockRef.current || isProcessing) return
 
-          // Lock scanner immediately to prevent duplicate detections
-          scanLockRef.current = true
-          const cleanToken = decodedText.trim()
-          setLastScannedCode(cleanToken)
+        // Lock scanner immediately to prevent duplicate detections
+        scanLockRef.current = true
+        const cleanToken = decodedText.trim()
+        setLastScannedCode(cleanToken)
 
-          // Audio/Visual feedback can be triggered here
-          if (onScan) {
-            onScan(cleanToken)
-          }
-
-          // Stop scanning stream cleanly after successful detection
-          if (scannerRef.current && scannerRef.current.isScanning) {
-            try {
-              const stopPromise = scannerRef.current.stop()
-              if (stopPromise && typeof stopPromise.catch === 'function') {
-                stopPromise.catch(() => {})
-              }
-            } catch {
-              // ignore
-            }
-            setIsScanning(false)
-          }
-        },
-        () => {
-          // Frame decode failure (normal when QR not yet in frame) - no op
+        // Dispatch detected token to parent validation pipeline
+        if (onScan) {
+          onScan(cleanToken)
         }
-      )
+
+        // Stop scanning stream cleanly after successful detection
+        if (scannerRef.current && scannerRef.current.isScanning) {
+          try {
+            const stopPromise = scannerRef.current.stop()
+            if (stopPromise && typeof stopPromise.catch === 'function') {
+              stopPromise.catch(() => {})
+            }
+          } catch {
+            // ignore
+          }
+          setIsScanning(false)
+        }
+      }
+
+      const onScanFailure = () => {
+        // Frame decode failure (normal when QR not yet in frame) - no op
+      }
+
+      // 5. Start decoding video stream with high-res config and graceful fallback
+      try {
+        await scannerRef.current.start(
+          cameraConfig,
+          scanConfig,
+          onScanSuccess,
+          onScanFailure
+        )
+      } catch (startErr) {
+        console.warn('[QRScanner] High-res camera start failed, falling back to standard constraints:', startErr?.message)
+        // Fallback to basic constraint without resolution bounds if camera driver rejects width/height
+        const fallbackConfig = selectedCameraId
+          ? { deviceId: selectedCameraId }
+          : { facingMode: { ideal: facingMode } }
+
+        await scannerRef.current.start(
+          fallbackConfig,
+          scanConfig,
+          onScanSuccess,
+          onScanFailure
+        )
+      }
+
+      // 6. Enable hardware continuous autofocus if supported by device camera track
+      try {
+        const videoElem = document.querySelector(`#${scannerId} video`)
+        const mediaStream = videoElem?.srcObject
+        const activeTrack = mediaStream?.getVideoTracks?.()[0]
+        if (activeTrack && typeof activeTrack.getCapabilities === 'function') {
+          const capabilities = activeTrack.getCapabilities()
+          if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+            await activeTrack.applyConstraints({
+              advanced: [{ focusMode: 'continuous' }]
+            }).catch(() => {})
+          }
+        }
+      } catch (focusErr) {
+        // Non-blocking autofocus capability notice
+      }
 
       if (isMountedRef.current) {
         setIsScanning(true)
