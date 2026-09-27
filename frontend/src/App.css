@@ -7696,6 +7696,688 @@ svg:not([width]):not([height]):not([class*="w-"]):not(.search-icon-svg):not(.slo
   }
 }
 
+/* =========================================================
+   VEHICLE ENTRY TERMINAL & RESPONSIVE DESIGN
+   ========================================================= */
+
+.vehicle-entry-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ingress Live Tag */
+.ingress-live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 9999px;
+}
+
+/* Form inputs styling */
+.plate-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.plate-country-badge {
+  position: absolute;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.plate-input-element {
+  padding-left: 56px !important;
+  font-size: 16px !important;
+  letter-spacing: 1.5px;
+}
+
+.select-modern {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 38px;
+  appearance: none;
+}
+
+/* Vehicle Type Selector Cards Grid */
+.vt-card-level-chip {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vehicle-type-card.active .vt-card-level-chip {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* Bay Capacity Telemetry Banner */
+.bay-capacity-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-md);
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+.bcb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bcb-label {
+  color: #94a3b8;
+}
+
+.bcb-floor-text {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.bcb-status {
+  display: flex;
+  align-items: center;
+}
+
+.bcb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bcb-badge.available {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.bcb-badge.full {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.ingress-submit-btn {
+  height: 46px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* =========================================================
+   CURRENT VEHICLE ENTRY / VEHICLE ENTRY DETAILS
+   ========================================================= */
+
+.vehicle-entry-details-section {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vehicle-entry-details-card {
+  padding: 24px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.1);
+  box-sizing: border-box;
+}
+
+.ved-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+}
+
+.ved-pill-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+
+.ved-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.ved-header-statuses {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.active-pill {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+}
+
+.ved-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.ved-card-cell {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ved-slot-highlight-cell {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.85) 100%);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.18);
+}
+
+.ved-cell-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.ved-cell-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  word-break: break-word;
+}
+
+.plate-value-accent {
+  font-size: 16px;
+  color: #38bdf8;
+  letter-spacing: 1px;
+}
+
+.ved-slot-badge {
+  font-size: 18px;
+  font-weight: 800;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ved-card-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Empty State Card */
+.vehicle-entry-empty-state {
+  padding: 36px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.empty-state-graphic {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.85;
+}
+
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 6px 0;
+}
+
+.empty-state-subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+  max-width: 520px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   CONTEXTUAL MAP SECTION & ASSIGNED SLOT FOCUS
+   ========================================================= */
+
+.vehicle-entry-map-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.map-context-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-radius: var(--radius-lg);
+}
+
+.mch-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 2px 0;
+}
+
+.mch-spotlight-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 9999px;
+  font-size: 13px;
+  color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  animation: spotlightPillPulse 2s ease-in-out infinite;
+}
+
+@keyframes spotlightPillPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(56, 189, 248, 0.5);
+  }
+}
+
+.mch-spotlight-badge strong {
+  font-size: 15px;
+  color: #f8fafc;
+}
+
+/* Slot Assigned Pin Badge & Glow on Map */
+.slot-assigned-pin-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 800;
+  background: #38bdf8;
+  color: #0b1120;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.slot-box.assigned-vehicle-focus {
+  border: 2px solid #38bdf8 !important;
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.3) 0%, rgba(15, 23, 42, 0.98) 100%) !important;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.8), inset 0 0 16px rgba(56, 189, 248, 0.3) !important;
+  animation: assignedSlotGlowPulse 1.8s ease-in-out infinite alternate !important;
+  transform: scale(1.05) !important;
+  z-index: 20 !important;
+}
+
+@keyframes assignedSlotGlowPulse {
+  0% {
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.6), inset 0 0 10px rgba(56, 189, 248, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 34px rgba(56, 189, 248, 0.95), 0 0 50px rgba(56, 189, 248, 0.4), inset 0 0 20px rgba(56, 189, 248, 0.4);
+  }
+}
+
+/* =========================================================
+   COMPREHENSIVE RESPONSIVE BREAKPOINTS
+   ========================================================= */
+
+/* Desktop / Large Screens (>= 1024px) */
+@media (min-width: 1024px) {
+  .terminal-grid-two {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .terminal-form-card,
+  .gate-barrier-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .terminal-grid-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .ved-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .parking-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* Large Mobile / Small Tablet (601px - 767px) */
+@media (min-width: 601px) and (max-width: 767px) {
+  .terminal-grid-two {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .ved-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .parking-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+
+  .floor-switch-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Mobile Screens (<= 600px) */
+@media (max-width: 600px) {
+  .vehicle-entry-page-container {
+    gap: 16px;
+    padding: 0;
+  }
+
+  .terminal-grid-two {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .terminal-form-card,
+  .gate-barrier-card {
+    padding: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Driver & Roll row stacked vertically on mobile */
+  .driver-roll-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-row.two-cols {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .vehicle-type-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .vehicle-type-card {
+    padding: 10px 4px;
+  }
+
+  .vt-card-icon {
+    font-size: 20px;
+  }
+
+  .vt-card-name {
+    font-size: 12px;
+  }
+
+  .vt-card-floor {
+    font-size: 9.5px;
+  }
+
+  .plate-input-element {
+    font-size: 15px !important;
+    padding-left: 50px !important;
+    height: 44px;
+  }
+
+  .plate-country-badge {
+    left: 8px;
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .ingress-submit-btn {
+    height: 48px;
+    font-size: 14px;
+    touch-action: manipulation;
+  }
+
+  .gate-barrier-stage {
+    min-height: 150px;
+    padding: 24px 12px;
+    margin: 14px 0;
+  }
+
+  .barrier-arm {
+    width: 140px;
+    height: 10px;
+  }
+
+  /* Current Vehicle Entry Details Card on Mobile */
+  .vehicle-entry-details-card {
+    padding: 16px;
+  }
+
+  .ved-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ved-header-statuses {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .ved-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ved-card-cell {
+    padding: 10px 12px;
+  }
+
+  .ved-slot-badge {
+    font-size: 16px;
+  }
+
+  .ved-card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+
+  .ved-card-footer .btn {
+    width: 100%;
+  }
+
+  .vehicle-entry-empty-state {
+    padding: 24px 16px;
+  }
+
+  .empty-state-graphic {
+    font-size: 32px;
+  }
+
+  .empty-state-title {
+    font-size: 15px;
+  }
+
+  .empty-state-subtitle {
+    font-size: 12px;
+  }
+
+  /* Contextual Map Section Mobile */
+  .map-context-header {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mch-spotlight-badge {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .floor-switch-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .floor-switch-btn {
+    padding: 12px 14px;
+  }
+
+  .switch-icon {
+    font-size: 22px;
+  }
+
+  .switch-text strong {
+    font-size: 14px;
+  }
+
+  .switch-text small {
+    font-size: 11px;
+  }
+
+  .map-toolbar {
+    padding: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .search-bar-wrap {
+    width: 100%;
+  }
+
+  .status-filter-group {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-pill {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .layout-legend {
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .parking-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+  }
+
+  .slot-box {
+    padding: 8px 6px;
+    min-height: 78px;
+    gap: 4px;
+  }
+
+  .slot-id {
+    font-size: 11.5px;
+  }
+
+  .slot-type-icon {
+    font-size: 12px;
+  }
+
+  .slot-plate {
+    font-size: 10px;
+  }
+
+  .slot-owner {
+    font-size: 9.5px;
+  }
+}
+
+
 
 
 
