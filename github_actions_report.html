@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GitHub Actions CI/CD Workflow Runs &amp; Checks</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0d1117; color: #c9d1d9; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 20px; margin-bottom: 24px; }
+    .title-group h1 { font-size: 26px; font-weight: 700; color: #58a6ff; display: flex; align-items: center; gap: 10px; }
+    .title-group p { color: #8b949e; font-size: 14px; margin-top: 4px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; }
+    .badge-success { background: rgba(46, 160, 67, 0.15); color: #3fb950; border: 1px solid #238636; }
+    .badge-fail { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid #da3633; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .metric-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px; text-align: center; }
+    .metric-val { font-size: 28px; font-weight: 800; color: #f0f6fc; }
+    .metric-val.pass { color: #3fb950; }
+    .metric-val.fail { color: #f85149; }
+    .metric-label { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+    .section-title { font-size: 18px; font-weight: 700; color: #f0f6fc; margin: 28px 0 16px; display: flex; align-items: center; gap: 8px; }
+    .workflow-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .workflow-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #21262d; border-bottom: 1px solid #30363d; }
+    .workflow-info { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; color: #f0f6fc; }
+    .icon-pass { color: #3fb950; font-weight: 700; font-size: 16px; }
+    .icon-fail { color: #f85149; font-weight: 700; font-size: 16px; }
+    .steps-container { padding: 16px 20px; }
+    .step-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 13px; }
+    .step-item:last-child { border-bottom: none; }
+    .step-name { display: flex; align-items: center; gap: 10px; color: #e6edf3; }
+    .step-duration { color: #8b949e; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; background: #21262d; color: #8b949e; font-weight: 600; border-bottom: 1px solid #30363d; }
+    td { padding: 10px 14px; border-bottom: 1px solid #21262d; }
+    tr:last-child td { border-bottom: none; }
+    .alert-box { background: rgba(248, 81, 73, 0.1); border: 1px solid #da3633; border-radius: 8px; padding: 16px; margin-top: 24px; color: #f85149; }
+    .alert-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .alert-desc { font-size: 13px; color: #ff7b72; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-group">
+      <h1>GitHub Actions CI/CD Pipeline Checks</h1>
+      <p>Repository: alzuni-shaikh/smart-college-parking-system (Branch: main)</p>
+    </div>
+    <div>
+      <span class="badge badge-success">✓ Latest Main Runs: ALL PASSING</span>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="metric-card">
+      <div class="metric-val">41</div>
+      <div class="metric-label">Total Workflow Runs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val pass">37</div>
+      <div class="metric-label">Passed Runs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val fail">4</div>
+      <div class="metric-label">Historical Failed Runs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val pass">3 / 3</div>
+      <div class="metric-label">Active Workflows Passing</div>
+    </div>
+  </div>
+
+  <div class="section-title">🚀 Latest Active Workflows on main (All Passed)</div>
+
+  <!-- Workflow 1 -->
+  <div class="workflow-card">
+    <div class="workflow-header">
+      <div class="workflow-info">
+        <span class="icon-pass">✓</span>
+        <span>Deploy Smart Campus Parking to GitHub Pages</span>
+        <span style="font-size: 12px; color: #8b949e; font-weight: 400;">(Run ID: 41065604165)</span>
+      </div>
+      <div>
+        <span class="badge badge-success">SUCCESS</span>
+      </div>
+    </div>
+    <div class="steps-container">
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Set up job</span>
+        <span class="step-duration">2s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Checkout Code (actions/checkout@v4)</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Setup Node.js v20 (actions/setup-node@v4)</span>
+        <span class="step-duration">4s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Install Frontend Dependencies (npm ci)</span>
+        <span class="step-duration">30s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Build Production Frontend (npm run build)</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Setup Pages (actions/configure-pages@v5)</span>
+        <span class="step-duration">0s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Upload Artifact (actions/upload-pages-artifact@v3)</span>
+        <span class="step-duration">2s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Deploy to GitHub Pages (actions/deploy-pages@v4)</span>
+        <span class="step-duration">51s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workflow 2 -->
+  <div class="workflow-card">
+    <div class="workflow-header">
+      <div class="workflow-info">
+        <span class="icon-pass">✓</span>
+        <span>Postman sync</span>
+        <span style="font-size: 12px; color: #8b949e; font-weight: 400;">(Run ID: 41065604269)</span>
+      </div>
+      <div>
+        <span class="badge badge-success">SUCCESS</span>
+      </div>
+    </div>
+    <div class="steps-container">
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Set up job</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Checkout Code (actions/checkout@v4)</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Push workspace (postmanlabs/postman-cli-action@v1: postman workspace push)</span>
+        <span class="step-duration">16s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workflow 3 -->
+  <div class="workflow-card">
+    <div class="workflow-header">
+      <div class="workflow-info">
+        <span class="icon-pass">✓</span>
+        <span>Postman Workspace Lint</span>
+        <span style="font-size: 12px; color: #8b949e; font-weight: 400;">(Run ID: 41065604091)</span>
+      </div>
+      <div>
+        <span class="badge badge-success">SUCCESS</span>
+      </div>
+    </div>
+    <div class="steps-container">
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Set up job</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Checkout Code (actions/checkout@v4)</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Install Postman CLI (dl-cli.pstmn.io)</span>
+        <span class="step-duration">3s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Authenticate Postman CLI (postman login --with-api-key)</span>
+        <span class="step-duration">1s</span>
+      </div>
+      <div class="step-item">
+        <span class="step-name"><span class="icon-pass">✓</span> Lint Workspace Resources (postman workspace lint)</span>
+        <span class="step-duration">1s</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">⚠️ Historical Failed Workflow Checks in Repository History</div>
+  <div class="workflow-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Run ID</th>
+          <th>Workflow Name</th>
+          <th>Branch</th>
+          <th>Commit / Trigger</th>
+          <th>Status</th>
+          <th>Root Cause Highlight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>35088018158</code></td>
+          <td>Deploy to GitHub Pages</td>
+          <td><code>main</code></td>
+          <td>Merge branch 'main' into main</td>
+          <td><span class="badge badge-fail">FAILURE</span></td>
+          <td>Build/artifact packaging misconfiguration during merge</td>
+        </tr>
+        <tr>
+          <td><code>33524767784</code></td>
+          <td>Deploy to GitHub Pages</td>
+          <td><code>main</code></td>
+          <td>feat: implement all 7 core modules and docs</td>
+          <td><span class="badge badge-fail">FAILURE</span></td>
+          <td>Dependency resolution error in frontend pipeline</td>
+        </tr>
+        <tr>
+          <td><code>32666695344</code></td>
+          <td>Deploy to GitHub Pages</td>
+          <td><code>main</code></td>
+          <td>fix: improve Firebase unauthorized-domain error</td>
+          <td><span class="badge badge-fail">FAILURE</span></td>
+          <td>Early deployment configuration error</td>
+        </tr>
+        <tr>
+          <td><code>32666014797</code></td>
+          <td>Deploy to GitHub Pages</td>
+          <td><code>main</code></td>
+          <td>ci: add GitHub Pages deployment workflow</td>
+          <td><span class="badge badge-fail">FAILURE</span></td>
+          <td>Initial Pages permissions/action setup failure</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert-box">
+    <div class="alert-title">CRITICAL DEPLOYMENT FAULT DETECTED: False-Positive Deployment Status</div>
+    <div class="alert-desc">
+      While GitHub Actions reports <strong>Deploy Smart Campus Parking to GitHub Pages</strong> as <strong>SUCCESS (Passed)</strong>, the live deployed website is actually broken (404 asset paths).
+      <code>vite.config.js</code> has <code>base: '/'</code> (Vercel SPA format), which renders scripts at <code>https://alzuni-shaikh.github.io/assets/...</code> instead of the subpath <code>https://alzuni-shaikh.github.io/smart-college-parking-system/assets/...</code>, resulting in a blank white page for end users.
+    </div>
+  </div>
+</body>
+</html>

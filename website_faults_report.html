@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprehensive Manual Testing &amp; Faults Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0b0f19; color: #e2e8f0; padding: 32px; }
+    .header { border-bottom: 1px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
+    h1 { font-size: 26px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+    p.sub { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+    .fault-list { display: flex; flex-direction: column; gap: 18px; }
+    .fault-card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 20px; }
+    .fault-card.critical { border-left: 5px solid #ef4444; }
+    .fault-card.high { border-left: 5px solid #f97316; }
+    .fault-card.medium { border-left: 5px solid #eab308; }
+    .fault-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .fault-title { font-size: 16px; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 10px; }
+    .badge { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .badge-crit { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .badge-high { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid #f97316; }
+    .badge-med { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #eab308; }
+    .fault-desc { font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 12px; }
+    .code-box { background: #030712; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 12px; color: #a5b4fc; overflow-x: auto; margin-top: 8px; }
+    .impact { display: inline-block; font-size: 12px; font-weight: 600; color: #ef4444; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔍 Manual Website Testing &amp; Highlighted Faults Report</h1>
+    <p class="sub">System: Smart College Parking System (SOCMAC Smart Park) | Note: Issues highlighted only, not resolved per instructions</p>
+  </div>
+
+  <div class="fault-list">
+    <!-- Fault 1 -->
+    <div class="fault-card critical">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>1. Production Live Site Blank White Screen (Asset Path 404s)</span>
+        </div>
+        <span class="badge badge-crit">Critical Severity</span>
+      </div>
+      <div class="fault-desc">
+        The live production website deployed via GitHub Pages at <code>https://alzuni-shaikh.github.io/smart-college-parking-system/</code> renders as a completely blank white page.
+        In <code>frontend/vite.config.js</code>, <code>base: '/'</code> was hardcoded for Vercel. As a result, HTML requests <code>/assets/index-BLr4mFsi.js</code> at domain root instead of the GitHub Pages repository subpath, returning <strong>HTTP 404 Not Found</strong> for all bundle JS/CSS files.
+      </div>
+      <div class="code-box">
+// In frontend/vite.config.js:
+export default defineConfig({
+  plugins: [react()],
+  base: '/', // ❌ BUG: Causes 404 on https://alzuni-shaikh.github.io/smart-college-parking-system/
+...
+      </div>
+      <div class="impact">Impact: End users visiting the live URL see a 100% blank page and cannot load the application.</div>
+    </div>
+
+    <!-- Fault 2 -->
+    <div class="fault-card critical">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>2. Uncaught ReferenceError: 'currentUid' is not defined in App.jsx</span>
+        </div>
+        <span class="badge badge-crit">Critical Severity</span>
+      </div>
+      <div class="fault-desc">
+        In <code>frontend/src/App.jsx</code> line 1735 inside the payment confirmation handler, <code>recordSuccessfulPayment</code> references <code>currentUid</code> which is never declared or passed into that scope (the user object is named <code>user?.uid</code> or <code>userProfile?.uid</code>).
+      </div>
+      <div class="code-box">
+// In frontend/src/App.jsx line 1733:
+recordSuccessfulPayment({
+  paymentId: `PAY-${slotId.replace(/[^a-zA-Z0-9]/g, '')}-${nowTimestamp}`,
+  userId: currentUid, // ❌ BUG: 'currentUid' is not defined (Throws ReferenceError)
+  studentName: ownerName || 'Campus Member',
+...
+      </div>
+      <div class="impact">Impact: Attempting to record successful payments crashes with an unhandled JavaScript runtime error.</div>
+    </div>
+
+    <!-- Fault 3 -->
+    <div class="fault-card high">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>3. Missing "Student Demo" and "Admin Demo" Buttons (Documentation Contradiction)</span>
+        </div>
+        <span class="badge badge-high">High Severity</span>
+      </div>
+      <div class="fault-desc">
+        The official project <code>README.md</code> explicitly advertises: <em>"1-Click Demo Access: Instant Student Demo and Admin Demo buttons to explore all features immediately without requiring external credentials."</em>
+        However, inspecting <code>frontend/src/pages/Login.jsx</code> reveals that NO demo buttons exist in the component. Unauthenticated users without a live Google/Firebase credential cannot bypass the login screen without manually hacking <code>localStorage</code> in DevTools.
+      </div>
+      <div class="impact">Impact: Evaluators and testers cannot access the application features advertised in the documentation.</div>
+    </div>
+
+    <!-- Fault 4 -->
+    <div class="fault-card high">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>4. 55 ESLint Errors &amp; Synchronous setState in useEffect Hooks</span>
+        </div>
+        <span class="badge badge-high">High Severity</span>
+      </div>
+      <div class="fault-desc">
+        Running <code>npm run lint</code> in the frontend reveals <strong>55 errors</strong>. Core components like <code>Navbar.jsx</code>, <code>ParkingLotMap.jsx</code>, and <code>WrongParkingReportModal.jsx</code> call <code>setState</code> synchronously inside <code>useEffect</code> bodies, triggering cascading renders, potential infinite render loops, and race conditions.
+      </div>
+      <div class="code-box">
+// In Navbar.jsx, ParkingLotMap.jsx, WrongParkingReportModal.jsx:
+useEffect(() => {
+  if (!currentUid) {
+    setNotifications([]) // ❌ Avoid calling setState() directly within an effect
+    return
+...
+      </div>
+      <div class="impact">Impact: Sub-optimal rendering performance, unneeded component re-mounts, and CI lint failure.</div>
+    </div>
+
+    <!-- Fault 5 -->
+    <div class="fault-card medium">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>5. Missing .env File &amp; Mock Firebase Credentials Fallback</span>
+        </div>
+        <span class="badge badge-med">Medium Severity</span>
+      </div>
+      <div class="fault-desc">
+        No <code>.env</code> or <code>.env.example</code> exists in the frontend. When built without environment variables, <code>firebase.js</code> falls back to dummy strings (<code>apiKey: 'mock-api-key'</code>, <code>projectId: 'mock-app'</code>). Submitting standard email login produces authentication failures without helpful guidance.
+      </div>
+      <div class="impact">Impact: Fresh checkouts require undocumented environment setup to operate live Firebase features.</div>
+    </div>
+
+    <!-- Fault 6 -->
+    <div class="fault-card medium">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>6. Monolithic 1.54 MB Unsplit JavaScript Bundle</span>
+        </div>
+        <span class="badge badge-med">Medium Severity</span>
+      </div>
+      <div class="fault-desc">
+        The production build generates a single chunk <code>dist/assets/index-BLr4mFsi.js</code> of <strong>1.54 MB</strong> (exceeding Vite's 500 kB limit). Admin views, student views, scanner engines, and icon libraries are bundled into the initial entry point without dynamic <code>React.lazy</code> imports.
+      </div>
+      <div class="impact">Impact: Slower initial page load times and higher mobile data consumption for students on campus networks.</div>
+    </div>
+
+    <!-- Fault 7 -->
+    <div class="fault-card medium">
+      <div class="fault-top">
+        <div class="fault-title">
+          <span>7. NPM Dependencies Security Audit Vulnerabilities</span>
+        </div>
+        <span class="badge badge-med">Medium Severity</span>
+      </div>
+      <div class="fault-desc">
+        Dependency scanning reveals <strong>3 vulnerabilities in backend</strong> (1 moderate, 1 high, 1 critical) and <strong>16 vulnerabilities in frontend</strong> (6 moderate, 10 high) in transitive packages (vite, rollup, express).
+      </div>
+      <div class="impact">Impact: Potential security risks in production deployment if dependencies are not updated.</div>
+    </div>
+  </div>
+</body>
+</html>

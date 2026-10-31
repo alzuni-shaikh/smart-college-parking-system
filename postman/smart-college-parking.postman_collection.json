@@ -1,0 +1,421 @@
+{
+  "info": {
+    "_postman_id": "b3e09880-cf68-45e0-82d2-c2e74dca7f89",
+    "name": "Smart College Parking System API",
+    "description": "Comprehensive Automated Integration and Functional Test Suite for Smart College Parking System backend APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "permitId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "qrToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPlate",
+      "value": "MH12AB9999",
+      "type": "string"
+    },
+    {
+      "key": "assignedSlotId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Service status is ok', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('ok');",
+              "    pm.expect(jsonData.service).to.eql('Smart College Parking Backend');",
+              "});",
+              "pm.test('Response contains valid ISO timestamp', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.timestamp).to.be.a('string');",
+              "    pm.expect(new Date(jsonData.timestamp).getTime()).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        }
+      }
+    },
+    {
+      "name": "2. Get System & Parking State",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Capacity totals match exactly 160 slots (80 Ground + 80 Basement)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.stats.total).to.eql(160);",
+              "    pm.expect(jsonData.stats.ground.total).to.eql(80);",
+              "    pm.expect(jsonData.stats.basement.total).to.eql(80);",
+              "    pm.expect(jsonData.slots.length).to.eql(160);",
+              "});",
+              "pm.test('Active sessions and history arrays exist', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.activeSessions).to.be.an('array');",
+              "    pm.expect(jsonData.history).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/parking/state",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "parking", "state"]
+        }
+      }
+    },
+    {
+      "name": "3. Get Parking Slots Array",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Returned slots array has 160 entries', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array').with.lengthOf(160);",
+              "});",
+              "pm.test('First slot is G-01 and last Ground slot is G-80', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData[0].id).to.eql('G-01');",
+              "    pm.expect(jsonData[79].id).to.eql('G-80');",
+              "    pm.expect(jsonData[80].id).to.eql('B-01');",
+              "    pm.expect(jsonData[159].id).to.eql('B-80');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/parking/slots",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "parking", "slots"]
+        }
+      }
+    },
+    {
+      "name": "4. Create Permit Checkout Session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Permit session created with PENDING_PAYMENT status', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.permitId).to.be.a('string');",
+              "    pm.expect(jsonData.permit.status).to.eql('PENDING_PAYMENT');",
+              "    pm.expect(jsonData.permit.paymentStatus).to.eql('UNPAID');",
+              "    pm.collectionVariables.set('permitId', jsonData.permitId);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"studentId\": \"STU-101\",\n  \"studentName\": \"Postman Test Runner\",\n  \"rollNumber\": \"ROLL-909\",\n  \"vehiclePlate\": \"MH12AB9999\",\n  \"vehicleType\": \"scooty\",\n  \"permitType\": \"Daily\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/permits/checkout-session",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "permits", "checkout-session"]
+        }
+      }
+    },
+    {
+      "name": "5. Simulate Stripe Payment Webhook",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Permit successfully activated and QR token generated', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.permit.status).to.eql('ACTIVE');",
+              "    pm.expect(jsonData.permit.paymentStatus).to.eql('PAID');",
+              "    pm.expect(jsonData.permit.qrToken).to.be.a('string').and.not.empty;",
+              "    pm.collectionVariables.set('qrToken', jsonData.permit.qrToken);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"permitId\": \"{{permitId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/webhooks/stripe-test-simulate",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "webhooks", "stripe-test-simulate"]
+        }
+      }
+    },
+    {
+      "name": "6. Retrieve Activated Permit by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Permit verification contains active status and correct plate', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.permit.id).to.eql(pm.collectionVariables.get('permitId'));",
+              "    pm.expect(jsonData.permit.vehiclePlate).to.eql('MH12AB9999');",
+              "    pm.expect(jsonData.permit.paymentStatus).to.eql('PAID');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/permits/{{permitId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "permits", "{{permitId}}"]
+        }
+      }
+    },
+    {
+      "name": "7. Gate Ingress: Verify & Enter",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Access granted with dynamic bay assignment on Ground Floor for Scooty', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.status).to.eql('ACCESS_GRANTED');",
+              "    pm.expect(jsonData.slotId).to.match(/^G-\\d{2}$/);",
+              "    pm.expect(jsonData.floor).to.eql('Ground Floor');",
+              "    pm.collectionVariables.set('assignedSlotId', jsonData.slotId);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"qrToken\": \"{{qrToken}}\",\n  \"plate\": \"MH12AB9999\",\n  \"studentName\": \"Postman Test Runner\",\n  \"vehicleType\": \"scooty\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/gate/verify-and-enter",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "gate", "verify-and-enter"]
+        }
+      }
+    },
+    {
+      "name": "8. Gate Anti-Passback Violation Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 409 Conflict', function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "pm.test('Rejection code is ALREADY_PARKED', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.false;",
+              "    pm.expect(jsonData.code).to.eql('ALREADY_PARKED');",
+              "    pm.expect(jsonData.status).to.eql('ACCESS_DENIED');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"qrToken\": \"{{qrToken}}\",\n  \"plate\": \"MH12AB9999\",\n  \"studentName\": \"Postman Test Runner\",\n  \"vehicleType\": \"scooty\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/gate/verify-and-enter",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "gate", "verify-and-enter"]
+        }
+      }
+    },
+    {
+      "name": "9. Gate Egress: Checkout & Immediate Release",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Vehicle checked out and duration recorded in history', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.duration).to.be.a('string');",
+              "    pm.expect(jsonData.historyEntry.vehicleNumber).to.eql('MH12AB9999');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plate\": \"MH12AB9999\",\n  \"slotId\": \"{{assignedSlotId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/gate/exit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "gate", "exit"]
+        }
+      }
+    },
+    {
+      "name": "10. Gate Double-Exit Validation Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 404 Not Found', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Reports no active session found', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.false;",
+              "    pm.expect(jsonData.message).to.include('No active parking session');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plate\": \"MH12AB9999\",\n  \"slotId\": \"{{assignedSlotId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/gate/exit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "gate", "exit"]
+        }
+      }
+    }
+  ]
+}

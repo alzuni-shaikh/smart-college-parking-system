@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Postman Automated Test Execution Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 20px; margin-bottom: 24px; }
+    .title-group h1 { font-size: 26px; font-weight: 700; color: #ff6c37; display: flex; align-items: center; gap: 10px; }
+    .title-group p { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+    .badge-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; }
+    .badge-postman { background: #ff6c37; color: #fff; }
+    .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+    .metric-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 18px; text-align: center; }
+    .metric-val { font-size: 28px; font-weight: 800; color: #f8fafc; }
+    .metric-val.pass { color: #4ade80; }
+    .metric-val.fail { color: #f87171; }
+    .metric-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+    .test-list { display: flex; flex-direction: column; gap: 14px; }
+    .test-item { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+    .test-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #1e293b; border-bottom: 1px solid #293548; }
+    .test-title { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; }
+    .method { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+    .method.get { background: #0284c7; color: #fff; }
+    .method.post { background: #16a34a; color: #fff; }
+    .test-meta { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #94a3b8; }
+    .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .status-200 { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .status-409 { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+    .status-404 { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    .assertions-box { padding: 14px 20px; background: #0f172a; }
+    .assertion { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #e2e8f0; margin-bottom: 6px; }
+    .assertion:last-child { margin-bottom: 0; }
+    .check-icon { color: #4ade80; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-group">
+      <h1><span class="badge badge-postman">Postman</span> Automated API Checks &amp; Regression Suite</h1>
+      <p>Target: Smart College Parking System API (Express + Parking Store Service)</p>
+    </div>
+    <div>
+      <span class="badge badge-success">✓ 100% Passing</span>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="metric-card">
+      <div class="metric-val">10</div>
+      <div class="metric-label">Total Requests</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val pass">23</div>
+      <div class="metric-label">Assertions Checked</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val pass">23</div>
+      <div class="metric-label">Assertions Passed</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">0</div>
+      <div class="metric-label">Assertions Failed</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">998ms</div>
+      <div class="metric-label">Total Duration</div>
+    </div>
+  </div>
+
+  <div class="test-list">
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method get">GET</span>
+          <span>1. Health Check Endpoint (/api/health)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>39 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Service status is ok and matches "Smart College Parking Backend"</div>
+        <div class="assertion"><span class="check-icon">✓</span> Response contains valid ISO timestamp</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method get">GET</span>
+          <span>2. Get System &amp; Parking State (/api/parking/state)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>10 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Capacity totals match exactly 160 slots (80 Ground Scooty + 80 Basement Bike)</div>
+        <div class="assertion"><span class="check-icon">✓</span> Active sessions and history arrays exist</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method get">GET</span>
+          <span>3. Get Parking Slots Array (/api/parking/slots)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>6 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Returned slots array has exactly 160 entries</div>
+        <div class="assertion"><span class="check-icon">✓</span> First slot is G-01, last Ground is G-80, first Basement is B-01, last is B-80</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>4. Create Permit Checkout Session (/api/permits/checkout-session)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>28 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Permit session created with PENDING_PAYMENT status and UNPAID state</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>5. Simulate Stripe Payment Webhook (/api/webhooks/stripe-test-simulate)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>45 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Permit successfully activated (status: ACTIVE, paymentStatus: PAID, valid qrToken generated)</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method get">GET</span>
+          <span>6. Retrieve Activated Permit by ID (/api/permits/:id)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>5 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Permit verification contains active status, paid status, and correct plate (MH12AB9999)</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>7. Gate Ingress: Verify &amp; Enter (/api/gate/verify-and-enter)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>28 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Access granted (status: ACCESS_GRANTED, dynamically allocated Bay G-01 on Ground Floor for Scooty)</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>8. Gate Anti-Passback Violation Check (/api/gate/verify-and-enter)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-409">409 Conflict</span>
+          <span>5 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 409 Conflict</div>
+        <div class="assertion"><span class="check-icon">✓</span> Anti-passback violation code is ALREADY_PARKED (denied entry for vehicle already inside)</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>9. Gate Egress: Checkout &amp; Immediate Release (/api/gate/exit)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-200">200 OK</span>
+          <span>8 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 200 OK</div>
+        <div class="assertion"><span class="check-icon">✓</span> Vehicle checked out, Bay G-01 released, and parking duration recorded in history</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-header">
+        <div class="test-title">
+          <span class="method post">POST</span>
+          <span>10. Gate Double-Exit Validation Check (/api/gate/exit)</span>
+        </div>
+        <div class="test-meta">
+          <span class="status-pill status-404">404 Not Found</span>
+          <span>6 ms</span>
+        </div>
+      </div>
+      <div class="assertions-box">
+        <div class="assertion"><span class="check-icon">✓</span> Status code is 404 Not Found</div>
+        <div class="assertion"><span class="check-icon">✓</span> Double exit rejected with "No active parking session found for this vehicle or bay"</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
