@@ -1,0 +1,485 @@
+{
+  "info": {
+    "_postman_id": "c9f1a238-d67b-48ae-97f2-984bb3e3b501",
+    "name": "Smart College Parking - Website & API Postman Suite",
+    "description": "Complete Postman Test Suite covering Website Frontend (HTML, headers, deployment) and Backend IoT Parking APIs (State, Permits, Gate Ingress/Egress, Anti-passback).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "webUrl",
+      "value": "https://alzuni-shaikh.github.io/smart-college-parking-system",
+      "type": "string"
+    },
+    {
+      "key": "apiUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "permitId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "qrToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPlate",
+      "value": "MH12AB9999",
+      "type": "string"
+    },
+    {
+      "key": "assignedSlotId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🌐 Website Tests",
+      "item": [
+        {
+          "name": "1. Website Live Production Homepage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is HTML document', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                  "});",
+                  "pm.test('Page contains root mount element <div id=\"root\">', function () {",
+                  "    pm.expect(pm.response.text()).to.include('id=\"root\"');",
+                  "});",
+                  "pm.test('Page title is SOCMAC Smart Park', function () {",
+                  "    pm.expect(pm.response.text()).to.include('<title>SOCMAC Smart Park | Intelligent Campus System</title>');",
+                  "});",
+                  "pm.test('Verify script bundle tag exists in HTML', function () {",
+                  "    pm.expect(pm.response.text()).to.include('<script type=\"module\"');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{webUrl}}/",
+              "host": ["{{webUrl}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "2. Website Production Asset Path Verification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK for subpath assets', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Asset returned is valid JavaScript module', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/javascript');",
+                  "});",
+                  "pm.test('Asset size is above 500 kB (bundled runtime)', function () {",
+                  "    pm.expect(pm.response.responseSize).to.be.above(500000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{webUrl}}/assets/index-BLr4mFsi.js",
+              "host": ["{{webUrl}}"],
+              "path": ["assets", "index-BLr4mFsi.js"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚡ API Tests",
+      "item": [
+        {
+          "name": "3. Backend Health Check Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Service status is ok', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.status).to.eql('ok');",
+                  "    pm.expect(res.service).to.eql('Smart College Parking Backend');",
+                  "});",
+                  "pm.test('Timestamp is valid ISO date', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(new Date(res.timestamp).getTime()).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/health",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        },
+        {
+          "name": "4. Parking State & Capacity (160 Bays)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Total bays exactly 160 (80 Ground Scooty + 80 Basement Bike)', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.stats.total).to.eql(160);",
+                  "    pm.expect(res.stats.ground.total).to.eql(80);",
+                  "    pm.expect(res.stats.basement.total).to.eql(80);",
+                  "    pm.expect(res.slots.length).to.eql(160);",
+                  "});",
+                  "pm.test('Active sessions array and history exist', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.activeSessions).to.be.an('array');",
+                  "    pm.expect(res.history).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/parking/state",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "parking", "state"]
+            }
+          }
+        },
+        {
+          "name": "5. Parking Slots Directory",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Slots array contains 160 elements', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.be.an('array').with.lengthOf(160);",
+                  "});",
+                  "pm.test('Canonical bay IDs verified (G-01, G-80, B-01, B-80)', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res[0].id).to.eql('G-01');",
+                  "    pm.expect(res[79].id).to.eql('G-80');",
+                  "    pm.expect(res[80].id).to.eql('B-01');",
+                  "    pm.expect(res[159].id).to.eql('B-80');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/parking/slots",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "parking", "slots"]
+            }
+          }
+        },
+        {
+          "name": "6. Create Permit Checkout Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Permit session created with PENDING_PAYMENT status', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.true;",
+                  "    pm.expect(res.permitId).to.be.a('string');",
+                  "    pm.expect(res.permit.status).to.eql('PENDING_PAYMENT');",
+                  "    pm.expect(res.permit.paymentStatus).to.eql('UNPAID');",
+                  "    pm.collectionVariables.set('permitId', res.permitId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"STU-990\",\n  \"studentName\": \"Postman Integration Tester\",\n  \"rollNumber\": \"ROLL-888\",\n  \"vehiclePlate\": \"MH12AB9999\",\n  \"vehicleType\": \"scooty\",\n  \"permitType\": \"Daily\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/permits/checkout-session",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "permits", "checkout-session"]
+            }
+          }
+        },
+        {
+          "name": "7. Simulate Stripe Payment Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Permit activated and QR token generated', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.true;",
+                  "    pm.expect(res.permit.status).to.eql('ACTIVE');",
+                  "    pm.expect(res.permit.paymentStatus).to.eql('PAID');",
+                  "    pm.expect(res.permit.qrToken).to.be.a('string').and.not.empty;",
+                  "    pm.collectionVariables.set('qrToken', res.permit.qrToken);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permitId\": \"{{permitId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/webhooks/stripe-test-simulate",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "webhooks", "stripe-test-simulate"]
+            }
+          }
+        },
+        {
+          "name": "8. Retrieve Activated Permit by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Permit matches ID and vehicle plate', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.permit.id).to.eql(pm.collectionVariables.get('permitId'));",
+                  "    pm.expect(res.permit.vehiclePlate).to.eql('MH12AB9999');",
+                  "    pm.expect(res.permit.paymentStatus).to.eql('PAID');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/permits/{{permitId}}",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "permits", "{{permitId}}"]
+            }
+          }
+        },
+        {
+          "name": "9. Gate Ingress: Verify & Enter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Access granted with dynamic bay assignment on Ground Floor for Scooty', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.true;",
+                  "    pm.expect(res.status).to.eql('ACCESS_GRANTED');",
+                  "    pm.expect(res.slotId).to.match(/^G-\\d{2}$/);",
+                  "    pm.expect(res.floor).to.eql('Ground Floor');",
+                  "    pm.collectionVariables.set('assignedSlotId', res.slotId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"qrToken\": \"{{qrToken}}\",\n  \"plate\": \"MH12AB9999\",\n  \"studentName\": \"Postman Integration Tester\",\n  \"vehicleType\": \"scooty\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/gate/verify-and-enter",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "gate", "verify-and-enter"]
+            }
+          }
+        },
+        {
+          "name": "10. Gate Anti-Passback Violation Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Anti-passback rejection code is ALREADY_PARKED', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.false;",
+                  "    pm.expect(res.code).to.eql('ALREADY_PARKED');",
+                  "    pm.expect(res.status).to.eql('ACCESS_DENIED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"qrToken\": \"{{qrToken}}\",\n  \"plate\": \"MH12AB9999\",\n  \"studentName\": \"Postman Integration Tester\",\n  \"vehicleType\": \"scooty\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/gate/verify-and-enter",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "gate", "verify-and-enter"]
+            }
+          }
+        },
+        {
+          "name": "11. Gate Egress: Checkout & Release Bay",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Vehicle checked out, bay released, duration formatted in history', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.true;",
+                  "    pm.expect(res.duration).to.be.a('string');",
+                  "    pm.expect(res.historyEntry.vehicleNumber).to.eql('MH12AB9999');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"MH12AB9999\",\n  \"slotId\": \"{{assignedSlotId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/gate/exit",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "gate", "exit"]
+            }
+          }
+        },
+        {
+          "name": "12. Gate Double-Exit Validation Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Rejection confirms no active parking session found', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.be.false;",
+                  "    pm.expect(res.message).to.include('No active parking session');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"MH12AB9999\",\n  \"slotId\": \"{{assignedSlotId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/api/gate/exit",
+              "host": ["{{apiUrl}}"],
+              "path": ["api", "gate", "exit"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
